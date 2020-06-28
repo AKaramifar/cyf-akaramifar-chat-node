@@ -24,6 +24,7 @@ app.get('/',(req, res) => {
 app.post('/newcontact', (req, res) => {
     const newContact = req.body;
     fs.writeFile(contacts, json.stringify(newContact));
+    res.json(contacts);
 })
 
 //Listen to port 3000 or any available
