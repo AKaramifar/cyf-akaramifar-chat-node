@@ -1,6 +1,7 @@
 // Import Library . . .
 const express = require('express');
 let contacts = require('./contacts.json');
+let messages = require('./messages.json');
 const app = express();
 const fs = require('fs');
 const cors = require('cors');
@@ -24,12 +25,22 @@ app.get('/',(req, res) => {
 app.get('/contacts',(req, res) => {
     res.json(contacts);
 })
+// Messages . . . 
+app.get('/messages', (req, res) => {
+    res.json(messages);
+})
 //---------------------- POST ----------------------
 // Post New Contact . . .
 app.post('/newcontact', (req, res) => {
     const newContact = [...contacts, req.body];
     fs.writeFile('./contacts.json', JSON.stringify(newContact),'utf8', (ERR) => console.log(ERR));
     res.send("New Contact Added Successfuly!!!")
+})
+// Post New Message . . .
+app.post('/newmessage', (req, res) => {
+    const newMessage = [...messages, req.body];
+    fs.writeFile('./messages.json', JSON.stringify(newMessage), 'utf8', (ERR) => console.log(ERR));
+    res.send('New Message Adde Successfuly!!!');
 })
 
 //Listen to port 3000 or any available

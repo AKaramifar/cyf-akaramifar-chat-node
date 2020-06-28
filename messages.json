@@ -1,0 +1,8 @@
+[
+  {
+    "messageId": "001",
+    "messageRowId": "001",
+    "contactId": { "SenderContactId": "001", "resiverContactId": "002" },
+    "message": "Hi Fardin, how are you?"
+  }
+]
