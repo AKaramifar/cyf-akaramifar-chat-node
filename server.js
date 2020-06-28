@@ -9,7 +9,7 @@ const { json } = require('body-parser');
 
 app.use(cors());
 app.use(bodyParser.json());
-
+//---------------------- GET ----------------------
 // Main URL: https://cyf-akaramifar-chat-node.herokuapp.com/
 app.get('/',(req, res) => {
     res.json({
@@ -20,11 +20,16 @@ app.get('/',(req, res) => {
         URL: "https://codeyourfuture.io/"
     })
 })
+// Contacts . . .
+app.get('/contacts',(req, res) => {
+    res.json(contacts);
+})
+//---------------------- POST ----------------------
 // Post New Contact . . .
 app.post('/newcontact', (req, res) => {
-    const newContact = req.body;
-    fs.writeFile(contacts, json.stringify(newContact));
-    res.json(contacts);
+    const newContact = [...contacts, req.body];
+    fs.writeFile('./contacts.json', JSON.stringify(newContact),'utf8', (ERR) => console.log(ERR));
+    res.send("New Contact Added Successfuly!!!")
 })
 
 //Listen to port 3000 or any available
