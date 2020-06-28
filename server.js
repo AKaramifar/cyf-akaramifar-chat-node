@@ -17,3 +17,9 @@ app.get('/',(req, res) => {
         URL: "https://codeyourfuture.io/"
     })
 })
+
+//Listen to port 3000 or any available
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server started on port: ${PORT}`);
+})
