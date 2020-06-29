@@ -25,6 +25,7 @@ app.get("/", (req, res) => {
   res.json({
     App: "Chat Node js",
     Student_FullName: "Afshin Karamifar",
+    Email: "a.karamifar@gmail.com",
     Position: "Trainee at Code Your Future",
     Company: "Code Your Future",
     URL: "https://codeyourfuture.io/"
