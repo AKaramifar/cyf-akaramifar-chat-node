@@ -2,7 +2,19 @@
   {
     "messageId": "1",
     "messageRowId": "1",
-    "contactId": { "SenderContactId": "001", "resiverContactId": "002" },
+    "contactId": {
+      "SenderContactId": "1",
+      "resiverContactId": "2"
+    },
     "message": "Hi, This is first message!"
+  },
+  {
+    "messageId": "2",
+    "messageRowId": "2",
+    "contactId": {
+      "SenderContactId": "2",
+      "resiverContactId": "1"
+    },
+    "message": "Hi, This is second message!"
   }
 ]
