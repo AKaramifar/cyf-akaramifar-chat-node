@@ -23,7 +23,7 @@ const writeJsonFile = (jsonFileURL, newJsonFile) => {
 // Main URL: https://cyf-akaramifar-chat-node.herokuapp.com/
 app.get("/", (req, res) => {
   res.json({
-    App: "Chat Node js",
+    App: "Web Chat Messanger",
     Student_FullName: "Afshin Karamifar",
     Email: "a.karamifar@gmail.com",
     Position: "Trainee at Code Your Future",
@@ -31,10 +31,10 @@ app.get("/", (req, res) => {
     URL: "https://codeyourfuture.io/"
   });
 });
-// Contacts . . .
-app.get("/contacts", (req, res) => {
-  let allContacts = JSON.parse(readJsonFile("./contacts.json"));
-  res.json(allContacts);
+// Users . . .
+app.get("/users", (req, res) => {
+  let allUsers = JSON.parse(readJsonFile("./users.json"));
+  res.json(allUsers);
 });
 // Messages . . .
 app.get("/messages", (req, res) => {
@@ -42,29 +42,46 @@ app.get("/messages", (req, res) => {
   res.json(allMessages);
 });
 //---------------------- POST ----------------------
+// SignIn Users . . .
+app.post("/signin", (req, res) => {  
+  let { username, password } = req.query;
+  let allUsers = JSON.parse(readJsonFile("./users.json"));
+  let FounduserName = allUsers.find(user => user.userName === username);  
+  let userNameAndPassword = allUsers.find(
+    user => user.userName === username && user.password === password
+  );
+  // console.log(userNameAndPassword)
+  if (userNameAndPassword) {
+    res.json("Success");
+  } else if (FounduserName) {
+    res.json("Password is not Correct!!!");
+  } else {
+    res.json("This User is not in DataBase!!!");
+  }
+});
 // Post New Contact . . .
 app.post("/newcontact", (req, res) => {
-  let newContacts = JSON.parse(readJsonFile("./contacts.json"));
-  newContacts.push(req.body);
-  writeJsonFile("./contacts.json", newContacts);
-  res.send("New Contact Added Successfuly!!!");
+  let allUsers = JSON.parse(readJsonFile("./users.json"));
+  allUsers.push(req.body);
+  writeJsonFile("./users.json", allUsers);
+  res.send("New users Added Successfuly!!!");
 });
 // Post New Message . . .
 app.post("/newmessage", (req, res) => {
-  let newMessages = JSON.parse(readJsonFile("./messages.json"));
-  newMessages.push(req.body);
-  writeJsonFile("./messages.json", newMessages);
+  let allMessages = JSON.parse(readJsonFile("./messages.json"));
+  allMessages.push(req.body);
+  writeJsonFile("./messages.json", allMessages);
   res.send("New Message Added Successfuly!!!");
 });
 // //---------------------- UPDATE ----------------------
 // Update Contact . . .
-app.post("/updatecontact", (req, res) => {
-  let allContacts = JSON.parse(readJsonFile("./contacts.json"));
-  let updatedContact = allContacts.map(contact =>
-    contact.contactId === req.body.contactId ? (contact = req.body) : contact
+app.post("/updateuser", (req, res) => {
+  let allUsers = JSON.parse(readJsonFile("./users.json"));
+  let updatedusers = allUsers.map(user =>
+    user.contactId === req.body.contactId ? (user = req.body) : user
   );
-  writeJsonFile("./contacts.json", updatedContact);
-  res.send("Contact updated Successfuly!!!");
+  writeJsonFile("./users.json", updatedusers);
+  res.send("users updated Successfuly!!!");
 });
 // Update Message . . .
 app.post("/updatemessage", (req, res) => {
@@ -77,13 +94,13 @@ app.post("/updatemessage", (req, res) => {
 });
 //---------------------- DELETE ----------------------
 // Delete Contact . . .
-app.delete("/deletecontact/:contactid", (req, res) => {
-  let allContacts = JSON.parse(readJsonFile("./contacts.json"));
+app.delete("/deleteuser/:userid", (req, res) => {
+  let allUser = JSON.parse(readJsonFile("./contacts.json"));
   let updatedContact = allContacts.filter(
     contact => contact.contactId !== req.params.contactid
   );
   writeJsonFile("./contacts.json", updatedContact);
-  res.send("Contact Deleted Successfuly!!!");
+  res.send("Users Deleted Successfuly!!!");
 });
 // Delete Message . . .
 app.delete("/deletemessage/:messageid", (req, res) => {
