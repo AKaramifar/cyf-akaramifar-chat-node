@@ -33,7 +33,6 @@ const newCode = () => {
   }
 };
 //---------------------- GET ----------------------
-// Main URL: https://cyf-akaramifar-chat-node.herokuapp.com/
 app.get("/", (req, res) => {
   res.json({
     App: "Web Chat Messanger",
@@ -44,37 +43,7 @@ app.get("/", (req, res) => {
     URL: "https://codeyourfuture.io/"
   });
 });
-// All user
-app.get("/allusers", (req, res) => {
-  let allUsers = JSON.parse(readJsonFile("./users.json"));
- res.json(allUsers);
-})
-// Users . . .
-app.post("/users", (req, res) => {
-  let { userid, username, userpassword, usersecuritycode } = req.query;
-  let allUsers = JSON.parse(readJsonFile("./users.json"));
-  let Founduser = allUsers.find(
-    user =>
-      user.userId === userid &&
-      user.userName === username &&
-      user.userPassword === userpassword &&
-      user.userSecurityCode === usersecuritycode
-  );
-  if (Founduser) {
-    let sendUsers = [];
-    allUsers.forEach((user, index) => {
-      sendUsers[index] = {
-        userId: user.userId,
-        userName: user.userName,
-        lastOnlineTime: user.lastOnlineTime,
-        online: user.online
-      };
-    });
-    res.json(sendUsers);
-  } else {
-    res.json("Security Error!!!");
-  }
-});
+
 // SignOut . . .
 app.post("/signout", (req, res) => {
   let {
@@ -104,19 +73,15 @@ app.post("/signout", (req, res) => {
     res.json("Security Error!!!");
   }
 });
-// Messages . . .
-app.get("/messages", (req, res) => {
-  let allMessages = JSON.parse(readJsonFile("./messages.json"));
-  res.json(allMessages);
-});
-//---------------------- POST ----------------------
 // SignIn Users . . .
 app.post("/signin", (req, res) => {
   let { username, password, lastonlinetime } = req.query;
   let allUsers = JSON.parse(readJsonFile("./users.json"));
   let FounduserName = allUsers.find(user => user.userName === username);
   let userNameAndPassword = allUsers.find(
-    user => user.userName === username && user.userPassword === password
+    user =>
+      user.userName === username &&
+      JSON.stringify(user.userPassword) === `"` + password + `"`
   );
   if (userNameAndPassword) {
     userNameAndPassword.lastOnlineTime = lastonlinetime;
@@ -165,51 +130,104 @@ app.post("/newuser", (req, res) => {
     });
   }
 });
-// // Post New Message . . .
-// app.post("/newmessage", (req, res) => {
-//   let allMessages = JSON.parse(readJsonFile("./messages.json"));
-//   allMessages.push(req.body);
-//   writeJsonFile("./messages.json", allMessages);
-//   res.send("New Message Added Successfuly!!!");
-// });
-// //---------------------- UPDATE ----------------------
-// // Update Contact . . .
-// app.post("/updateuser", (req, res) => {
-//   let allUsers = JSON.parse(readJsonFile("./users.json"));
-//   let updatedusers = allUsers.map(user =>
-//     user.contactId === req.body.contactId ? (user = req.body) : user
-//   );
-//   writeJsonFile("./users.json", updatedusers);
-//   res.send("users updated Successfuly!!!");
-// });
-// // Update Message . . .
-// app.post("/updatemessage", (req, res) => {
-//   let allMessages = JSON.parse(readJsonFile("./messages.json"));
-//   let updatedMessages = allMessages.map(message =>
-//     message.messageId === req.body.messageId ? (message = req.body) : message
-//   );
-//   writeJsonFile("./messages.json", updatedMessages);
-//   res.send("Message Updated Successfuly!!!");
-// });
-//---------------------- DELETE ----------------------
-// // Delete Contact . . .
-// app.delete("/deleteuser/:userid", (req, res) => {
-//   let allUser = JSON.parse(readJsonFile("./contacts.json"));
-//   let updatedContact = allUser.filter(
-//     contact => contact.contactId !== req.params.contactid
-//   );
-//   writeJsonFile("./contacts.json", updatedContact);
-//   res.send("Users Deleted Successfuly!!!");
-// });
-// // Delete Message . . .
-// app.delete("/deletemessage/:messageid", (req, res) => {
-//   let allMessages = JSON.parse(readJsonFile("./messages.json"));
-//   let updatedMessages = allMessages.filter(
-//     message => message.messageId !== req.params.messageid
-//   );
-//   writeJsonFile("./messages.json", updatedMessages);
-//   res.send("Message Deleted Successfuly!!!");
-// });
+// Messages . . .
+app.post("/data", (req, res) => {
+  // Message Part
+  let allMessages = JSON.parse(readJsonFile("./messages.json"));
+  let userRequest = req.body;
+  // console.log(userRequest.currentUserToChat);
+  // console.log(userRequest.currentUserId);
+  allMessages.forEach((message) =>{
+    if( message.receiverUserId === userRequest.currentUserId &&
+      message.senderUserId === userRequest.currentUserToChat){
+       message.read = true;
+    }
+  });
+  writeJsonFile("./messages.json", allMessages);
+  let allUsers = JSON.parse(readJsonFile("./users.json"));
+  allMessages = JSON.parse(readJsonFile("./messages.json"));
+  let userAuthentication = allUsers.find(
+    user =>
+      user.userName === userRequest.currentUserName &&
+      JSON.stringify(user.userPassword) ===
+        `"` + userRequest.currentUserPassword + `"` &&
+      user.userSecurityCode === userRequest.currentUserSecurityCode
+  );
+  // Users Message Part
+  if (userAuthentication) {
+    let myMessages = allMessages.filter(
+      message =>
+        message.senderUserId.indexOf(userRequest.currentUserId) > -1 ||
+        message.receiverUserId.indexOf(userRequest.currentUserId) > -1
+    );
+    let sendUsers = [];
+    allUsers.forEach((user, index) => {
+      sendUsers[index] = {
+        userId: user.userId,
+        userName: user.userName,
+        lastOnlineTime: user.lastOnlineTime,
+        online: user.online
+      };
+    });
+    let userData = [[...sendUsers], [...myMessages]];
+    res.json(userData);
+  }
+});
+// Post New Message
+app.post("/newmessage", (req, res) => {
+  let newMessage = req.body;
+  let allMessages = JSON.parse(readJsonFile("./messages.json"));
+  let usersId = [];
+  if (Array.isArray(newMessage.receiverUserId)) {
+    usersId = [newMessage.senderUserId, ...newMessage.receiverUserId];
+  } else {
+    usersId = [newMessage.senderUserId, newMessage.receiverUserId];
+  }
+  let messagesBetweenUsers = [];
+  if (allMessages.length > 0) {
+    if (newMessage.groupId === "null") {
+      messagesBetweenUsers = allMessages.filter(
+        message =>
+          usersId.indexOf(message.senderUserId) > -1 &&
+          usersId.indexOf(message.receiverUserId) > -1
+      );
+    }
+  }
+  newMessage.messageId =
+    allMessages.length > 0
+      ? parseInt(allMessages[allMessages.length - 1].messageId) + 1
+      : 1;
+  newMessage.messageRowId =
+    messagesBetweenUsers.length > 0
+      ? parseInt(
+          messagesBetweenUsers[messagesBetweenUsers.length - 1].messageRowId
+        ) + 1
+      : 1;
+  newMessage.read = false;
+  allMessages.push(newMessage);
+  writeJsonFile("./messages.json", allMessages);
+  res.json("Successfull");
+});
+// Edit Message
+app.post("/editmessage", (req, res) => {
+  let editMessage = req.body;
+  let allMessages = JSON.parse(readJsonFile("./messages.json"));
+  allMessages.forEach((message) => {
+    if(message.messageId === editMessage.messageId){
+      message.message = editMessage.message
+    }
+  })
+  writeJsonFile("./messages.json", allMessages);
+  res.json("Success");
+});
+// Delete Message
+app.post("/deletemessage", (req, res) => {
+  let deleteMessage = req.body;
+  let allMessages = JSON.parse(readJsonFile("./messages.json"));
+  allMessages = allMessages.filter(message => message.messageId !== deleteMessage.messageId);
+  writeJsonFile("./messages.json", allMessages);
+  res.json("Success");
+});
 //Listen to port 3000 or any available
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
